@@ -1,5 +1,5 @@
 from roboflow import Roboflow
-rf = Roboflow(api_key="zAkmnLnZgDoFFfBnKvKR")
+rf = Roboflow(api_key="api")
 project = rf.workspace("smopensourcefiredetection").project("firedetection-9toil")
 version = project.version(6)
 dataset = version.download("yolov8")
