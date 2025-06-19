@@ -1,0 +1,21 @@
+names:
+- cloud
+- fire
+- fog
+- forest
+- person
+- rock
+- smoke
+- sunset
+- tree
+- water
+nc: 10
+roboflow:
+  license: MIT
+  project: firedetection-9toil
+  url: https://universe.roboflow.com/smopensourcefiredetection/firedetection-9toil/dataset/7
+  version: 7
+  workspace: smopensourcefiredetection
+test: C:/Users/admin/2414115 - ver2/firedetection-7/test
+train: C:/Users/admin/2414115 - ver2/firedetection-7/train
+val: C:/Users/admin/2414115 - ver2/firedetection-7/valid

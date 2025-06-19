@@ -1,0 +1,60 @@
+(yolo_env) PS C:\Users\admin\2414115 - ver2> python .\dataset_test.py
+=== 데이터셋 구조 확인: C:/Users/admin/2414115 - ver2/firedetection-7 ===
+
+📁 train/ 폴더:
+   존재 여부: True
+   📁 train/images/ 존재: True
+      📷 이미지 파일 개수: 3570
+      📷 첫 번째 이미지: 11_jpg.rf.27b791ac08e866875d6ce1f09d8c747d.jpg
+   📁 train/labels/ 존재: True
+      🏷️  라벨 파일 개수: 3570
+      🏷️  첫 번째 라벨: 11_jpg.rf.27b791ac08e866875d6ce1f09d8c747d.txt
+
+📁 valid/ 폴더:
+   존재 여부: True
+   📁 valid/images/ 존재: True
+      📷 이미지 파일 개수: 345
+      📷 첫 번째 이미지: 10_jpg.rf.53930e7861e0b5c7f3532a1a62a1db68.jpg
+   📁 valid/labels/ 존재: True
+      🏷️  라벨 파일 개수: 345
+      🏷️  첫 번째 라벨: 10_jpg.rf.53930e7861e0b5c7f3532a1a62a1db68.txt
+
+📁 test/ 폴더:
+   존재 여부: True
+   📁 test/images/ 존재: True
+      📷 이미지 파일 개수: 169
+      📷 첫 번째 이미지: 1224_png.rf.e85b3ac02a79a6d6508fe36386b386bf.jpg
+   📁 test/labels/ 존재: True
+      🏷️  라벨 파일 개수: 169
+      🏷️  첫 번째 라벨: 1224_png.rf.e85b3ac02a79a6d6508fe36386b386bf.txt
+
+📄 설정 파일 확인:
+   ✅ data.yaml 존재
+   📝 data.yaml 내용 (처음 10줄):
+       1: names:
+       2: - cloud
+       3: - fire
+       4: - fog
+       5: - forest
+       6: - person
+       7: - rock
+       8: - smoke
+       9: - sunset
+      10: - tree
+      ... (총 21줄)
+
+🔗 이미지-라벨 매칭 확인:
+   📁 train/:
+      총 이미지: 3570
+      매칭된 라벨: 3570
+      매칭 비율: 100.0%
+   📁 valid/:
+      총 이미지: 345
+      매칭된 라벨: 345
+      매칭 비율: 100.0%
+   📁 test/:
+      총 이미지: 169
+      매칭된 라벨: 169
+      매칭 비율: 100.0%
+
+============================================================
