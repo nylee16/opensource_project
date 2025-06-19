@@ -1,0 +1,115 @@
+import inspect
+from transformers import TrainingArguments
+print(inspect.signature(TrainingArguments.__init__))
+
+!pip install -qU transformers datasets
+!pip install --upgrade transformers datasets huggingface-hub accelerate soundfile librosa
+!apt-get update && apt-get install -y ffmpeg
+
+import transformers
+print(transformers.__version__)
+
+from google.colab import drive
+drive.mount('/content/drive')
+import os
+assert os.path.exists("/content/drive/MyDrive/labels.csv"), "labels.csv 경로를 확인하세요"
+from huggingface_hub import snapshot_download
+
+# 1) Repo 전체(메타+LFS) 로컬로 내려받기
+local_dir = snapshot_download(
+    repo_id="bigfish951/whisper-project",
+    repo_type="dataset",
+    use_auth_token=True    # 로그인 되어 있으면 True
+)
+
+# 2) labels.csv 읽어서 경로를 전부 로컬 경로로 바꿔주기
+import os, pandas as pd
+df = pd.read_csv(os.path.join(local_dir, "labels.csv"))
+df['file_path'] = df['file_path'].apply(lambda fn: os.path.join(local_dir, fn))
+
+# 3) pandas → HuggingFace Dataset
+from datasets import Dataset, Audio
+ds = Dataset.from_pandas(df)
+
+# 4) Audio 타입으로 캐스팅
+ds = ds.cast_column("file_path", Audio(sampling_rate=16000))
+
+# 5) train/test 분할
+split_ds = ds.train_test_split(test_size=0.1)
+train_ds = split_ds["train"]
+eval_ds  = split_ds["test"]
+
+import os, pandas as pd
+from huggingface_hub import snapshot_download
+
+# (1) Dataset 전체 내려받기
+local_dir = snapshot_download("bigfish951/whisper-project", repo_type="dataset", use_auth_token=True)
+
+# (2) CSV 로드
+csv_path = os.path.join(local_dir, "labels.csv")
+df = pd.read_csv(csv_path)
+
+# (3) URL에서 파일 이름만 추출
+#     ex: 'https://.../dialog_00300480.wav' -> 'dialog_00300480.wav'
+df['file_name'] = df['file_path'].apply(lambda url: url.split('/')[-1])
+
+# (4) local_dir과 결합해서 진짜 파일 경로로 바꿔 주기
+df['file_path'] = df['file_name'].apply(lambda fn: os.path.join(local_dir, fn))
+
+# (5) 실제 존재하는 파일만 필터링
+df = df[df['file_path'].apply(os.path.isfile)]
+print("Filtered DataFrame shape:", df.shape)  # 이제 (3000, 3) 이 되어야 합니다.
+
+# (6) 이제 HuggingFace Dataset으로 변환
+from datasets import Dataset, Audio
+ds = Dataset.from_pandas(df)
+ds = ds.cast_column("file_path", Audio(sampling_rate=16000))
+
+# (7) train/test split
+split = ds.train_test_split(test_size=0.1)
+train_dataset, eval_dataset = split["train"], split["test"]
+
+from transformers import DataCollatorForSeq2Seq
+
+data_collator = DataCollatorForSeq2Seq(
+    tokenizer=processor.feature_extractor,  # 혹은 processor.tokenizer
+    model=   model,
+    padding="longest",
+)
+from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
+import torch
+
+training_args = Seq2SeqTrainingArguments(
+    output_dir                  = "./whisper-output",
+    per_device_train_batch_size = 4,
+    per_device_eval_batch_size  = 4,
+    gradient_accumulation_steps = 2,
+    num_train_epochs            = 3,
+
+    eval_strategy    = "steps",
+    eval_steps       = 500,
+    logging_strategy = "steps",
+    logging_steps    = 100,
+    save_strategy    = "steps",
+    save_steps       = 500,
+
+    predict_with_generate = True,
+    generation_max_length = 128,
+    generation_num_beams  = 4,
+
+    learning_rate = 1e-5,
+    warmup_steps  = 200,
+    fp16          = torch.cuda.is_available(),
+    report_to     = [],
+)
+
+trainer = Seq2SeqTrainer(
+    model            = model,
+    args             = training_args,
+    train_dataset    = train_dataset,
+    eval_dataset     = eval_dataset,
+    processing_class = processor,      
+    data_collator    = data_collator,  
+)
+
+trainer.train()
