@@ -1,0 +1,333 @@
+import torch
+import librosa
+import numpy as np
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
+import os
+import json
+from typing import Dict, Any, Tuple
+
+# Hugging Face 토큰 설정
+from huggingface_hub import login
+login("") # hugging face 토큰 입력
+
+class FireDetectionInference:
+    def __init__(self, model_path: str = "/Users/pit_a_pat_/Desktop/Project/whisper-output/checkpoint-1014"):
+        """
+        화재 감지 추론 클래스 초기화
+        
+        Args:
+            model_path: 학습된 모델의 경로
+        """
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Using device: {self.device}")
+        
+        # 모델과 프로세서 로드
+        try:
+            # 먼저 로컬 모델에서 프로세서를 로드하려고 시도
+            self.processor = WhisperProcessor.from_pretrained(model_path)
+            print("Loaded processor from local model")
+        except:
+            # 실패하면 한국어 Whisper 모델 사용
+            print("Loading Korean Whisper processor...")
+            self.processor = WhisperProcessor.from_pretrained("SungBeom/whisper-small-ko")
+        
+        # 모델 로드
+        try:
+            self.model = WhisperForConditionalGeneration.from_pretrained(model_path)
+            print("Loaded model from local checkpoint")
+        except Exception as e:
+            print(f"Failed to load local model: {e}")
+            print("Loading Korean Whisper model...")
+            self.model = WhisperForConditionalGeneration.from_pretrained("SungBeom/whisper-small-ko")
+        
+        self.model.to(self.device)
+        self.model.eval()
+        
+        # 화재 관련 키워드 정의
+        self.fire_keywords = [
+            '화재', '불', '연기', '불길', '화염', '타다', '타고있다', '타고 있다',
+            'fire', 'smoke', 'flame', 'burning', 'burn', 'emergency', 'alarm',
+            '경보', '비상', '위험', '대피', '소방', '소방차', '119'
+        ]
+        
+        # 비화재 관련 키워드 정의
+        self.non_fire_keywords = [
+            '정상', '평상시', '일상', '조용', '안전', '문제없음', '문제 없음',
+            'normal', 'safe', 'quiet', 'peaceful', 'routine', 'daily'
+        ]
+        
+        print("Fire Detection Model loaded successfully!")
+    
+    def preprocess_audio(self, audio_path: str) -> torch.Tensor:
+        """
+        오디오 파일을 전처리하여 모델 입력 형태로 변환
+        
+        Args:
+            audio_path: 오디오 파일 경로
+            
+        Returns:
+            전처리된 오디오 텐서
+        """
+        try:
+            # 오디오 로드 (16kHz로 리샘플링)
+            audio, sr = librosa.load(audio_path, sr=16000)
+            
+            # 최대 길이 제한 (30초)
+            max_length = 30 * 16000
+            if len(audio) > max_length:
+                audio = audio[:max_length]
+            
+            # Whisper 프로세서로 특성 추출
+            inputs = self.processor(audio, sampling_rate=16000, return_tensors="pt")
+            
+            return inputs.input_features.to(self.device)
+            
+        except Exception as e:
+            print(f"Error preprocessing audio: {e}")
+            return None
+    
+    def predict_text(self, input_features: torch.Tensor) -> str:
+        """
+        오디오에서 텍스트를 추출
+        
+        Args:
+            input_features: 전처리된 오디오 특성
+            
+        Returns:
+            추출된 텍스트
+        """
+        try:
+            with torch.no_grad():
+                # 텍스트 생성
+                generated_ids = self.model.generate(input_features)
+                
+                # 토큰을 텍스트로 디코딩
+                transcription = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                
+                return transcription.strip()
+                
+        except Exception as e:
+            print(f"Error generating text: {e}")
+            return ""
+    
+    def analyze_fire_situation(self, text: str) -> Dict[str, Any]:
+        """
+        추출된 텍스트를 분석하여 화재 상황인지 판단
+        
+        Args:
+            text: 추출된 텍스트
+            
+        Returns:
+            분석 결과 딕셔너리
+        """
+        text_lower = text.lower()
+        
+        # 화재 키워드 점수 계산
+        fire_score = sum(1 for keyword in self.fire_keywords if keyword.lower() in text_lower)
+        
+        # 비화재 키워드 점수 계산
+        non_fire_score = sum(1 for keyword in self.non_fire_keywords if keyword.lower() in text_lower)
+        
+        # 전체 점수 계산
+        total_score = fire_score + non_fire_score
+        
+        if total_score == 0:
+            # 키워드가 없는 경우, 텍스트 길이와 내용을 기반으로 판단
+            if len(text) < 5:
+                result = "normal"  # 텍스트가 너무 짧으면 정상으로 판단
+                confidence = 0.5
+            else:
+                result = "unknown"  # 판단 불가
+                confidence = 0.3
+        else:
+            # 점수 기반 판단
+            if fire_score > non_fire_score:
+                result = "fire"
+                confidence = fire_score / total_score
+            elif non_fire_score > fire_score:
+                result = "normal"
+                confidence = non_fire_score / total_score
+            else:
+                result = "unknown"
+                confidence = 0.5
+        
+        return {
+            "situation": result,
+            "confidence": round(confidence, 3),
+            "fire_score": fire_score,
+            "non_fire_score": non_fire_score,
+            "extracted_text": text,
+            "total_score": total_score
+        }
+    
+    def predict_fire_situation(self, audio_path: str) -> Dict[str, Any]:
+        """
+        오디오 파일에서 화재 상황을 판단하는 메인 함수
+        
+        Args:
+            audio_path: 오디오 파일 경로
+            
+        Returns:
+            화재 상황 판단 결과
+        """
+        try:
+            # 파일 존재 확인
+            if not os.path.exists(audio_path):
+                return {
+                    "error": "Audio file not found",
+                    "situation": "error",
+                    "confidence": 0.0
+                }
+            
+            # 오디오 전처리
+            input_features = self.preprocess_audio(audio_path)
+            if input_features is None:
+                return {
+                    "error": "Failed to preprocess audio",
+                    "situation": "error",
+                    "confidence": 0.0
+                }
+            
+            # 텍스트 추출
+            extracted_text = self.predict_text(input_features)
+            
+            # 화재 상황 분석
+            analysis_result = self.analyze_fire_situation(extracted_text)
+            
+            # UI를 위한 추가 정보
+            result = {
+                "situation": analysis_result["situation"],
+                "confidence": analysis_result["confidence"],
+                "extracted_text": analysis_result["extracted_text"],
+                "fire_score": analysis_result["fire_score"],
+                "non_fire_score": analysis_result["non_fire_score"],
+                "audio_file": os.path.basename(audio_path),
+                "timestamp": str(np.datetime64('now')),
+                "ui_action": self._get_ui_action(analysis_result["situation"])
+            }
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "error": str(e),
+                "situation": "error",
+                "confidence": 0.0
+            }
+    
+    def _get_ui_action(self, situation: str) -> str:
+        """
+        상황에 따른 UI 액션 결정
+        
+        Args:
+            situation: 판단된 상황
+            
+        Returns:
+            UI에서 수행할 액션
+        """
+        if situation == "fire":
+            return "show_fire_alert"  # 화재 화면 표시
+        elif situation == "normal":
+            return "show_normal_screen"  # 정상 화면 표시
+        elif situation == "unknown":
+            return "show_warning"  # 경고 화면 표시
+        else:
+            return "show_error"  # 에러 화면 표시
+    
+    def batch_predict(self, audio_directory: str) -> Dict[str, Any]:
+        """
+        디렉토리 내의 모든 wav 파일에 대해 배치 예측 수행
+        
+        Args:
+            audio_directory: 오디오 파일들이 있는 디렉토리
+            
+        Returns:
+            배치 예측 결과
+        """
+        results = []
+        
+        try:
+            # wav 파일들 찾기
+            wav_files = [f for f in os.listdir(audio_directory) if f.endswith('.wav')]
+            
+            print(f"Found {len(wav_files)} wav files in {audio_directory}")
+            
+            for wav_file in wav_files:
+                audio_path = os.path.join(audio_directory, wav_file)
+                result = self.predict_fire_situation(audio_path)
+                result["file_name"] = wav_file
+                results.append(result)
+                
+                print(f"Processed {wav_file}: {result['situation']} (confidence: {result['confidence']})")
+            
+            # 전체 통계
+            fire_count = sum(1 for r in results if r['situation'] == 'fire')
+            normal_count = sum(1 for r in results if r['situation'] == 'normal')
+            unknown_count = sum(1 for r in results if r['situation'] == 'unknown')
+            error_count = sum(1 for r in results if r['situation'] == 'error')
+            
+            summary = {
+                "total_files": len(wav_files),
+                "fire_detected": fire_count,
+                "normal_detected": normal_count,
+                "unknown_detected": unknown_count,
+                "error_count": error_count,
+                "fire_percentage": round(fire_count / len(wav_files) * 100, 2) if wav_files else 0
+            }
+            
+            return {
+                "summary": summary,
+                "detailed_results": results
+            }
+            
+        except Exception as e:
+            return {
+                "error": str(e),
+                "summary": {},
+                "detailed_results": []
+            }
+
+def main():
+    """
+    메인 실행 함수 - 테스트용
+    """
+    # 모델 초기화
+    detector = FireDetectionInference()
+    
+    # 테스트할 오디오 파일 경로
+    test_audio_dir = "/Users/pit_a_pat_/Desktop/backup-fire"
+    
+    # 배치 예측 수행
+    print("Starting batch prediction...")
+    results = detector.batch_predict(test_audio_dir)
+    
+    # 결과 출력
+    print("\n=== SUMMARY ===")
+    if "summary" in results:
+        summary = results["summary"]
+        print(f"Total files processed: {summary.get('total_files', 0)}")
+        print(f"Fire detected: {summary.get('fire_detected', 0)}")
+        print(f"Normal detected: {summary.get('normal_detected', 0)}")
+        print(f"Unknown detected: {summary.get('unknown_detected', 0)}")
+        print(f"Errors: {summary.get('error_count', 0)}")
+        print(f"Fire percentage: {summary.get('fire_percentage', 0)}%")
+    
+    # 상세 결과 저장
+    output_file = "fire_detection_results.json"
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+    
+    print(f"\nDetailed results saved to {output_file}")
+    
+    # 첫 번째 파일의 상세 결과 출력 (예시)
+    if results.get("detailed_results"):
+        first_result = results["detailed_results"][0]
+        print(f"\n=== SAMPLE RESULT ===")
+        print(f"File: {first_result.get('file_name', 'N/A')}")
+        print(f"Situation: {first_result.get('situation', 'N/A')}")
+        print(f"Confidence: {first_result.get('confidence', 'N/A')}")
+        print(f"Extracted text: {first_result.get('extracted_text', 'N/A')}")
+        print(f"UI Action: {first_result.get('ui_action', 'N/A')}")
+
+if __name__ == "__main__":
+    main() 
