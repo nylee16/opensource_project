@@ -1,0 +1,149 @@
+from huggingface_hub import login
+login("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")
+
+# 3. 라이브러리 임포트
+import torch
+import pandas as pd
+import os
+import numpy as np
+from datasets import load_dataset, Audio, Dataset
+from transformers import WhisperProcessor, WhisperForConditionalGeneration, Seq2SeqTrainer, Seq2SeqTrainingArguments
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union
+
+# GPU 메모리 설정
+if torch.backends.mps.is_available():
+    import os
+    os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
+
+@dataclass
+class DataCollatorSpeechSeq2SeqWithPadding:
+    processor: Any
+
+    def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> Dict[str, torch.Tensor]:
+        # 입력 특성의 길이 확인
+        input_features = [{"input_features": feature["input_features"]} for feature in features]
+        batch = self.processor.feature_extractor.pad(input_features, return_tensors="pt")
+
+        # 레이블 패딩
+        label_features = [{"input_ids": feature["labels"]} for feature in features]
+        labels_batch = self.processor.tokenizer.pad(label_features, return_tensors="pt")
+
+        # labels는 -100으로 패딩
+        labels = labels_batch["input_ids"].masked_fill(labels_batch.attention_mask.ne(1), -100)
+
+        # 모든 필요한 항목들을 배치에 추가
+        batch["labels"] = labels
+
+        return batch
+
+# 4. 데이터셋 로드 및 전처리
+# CSV 파일을 직접 로드하고 정리
+def clean_csv():
+    with open('labels.csv', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    cleaned_data = []
+    current_line = []
+    
+    for line in lines[1:]:  # Skip header
+        if line.strip().startswith('https://'):
+            if current_line:
+                cleaned_data.append(','.join(current_line))
+            current_line = []
+        current_line.append(line.strip())
+    
+    if current_line:
+        cleaned_data.append(','.join(current_line))
+    
+    # Create DataFrame
+    result = []
+    for line in cleaned_data:
+        parts = line.split(',', 1)
+        if len(parts) == 2:
+            # URL에서 파일 이름만 추출하고 로컬 경로로 변환
+            filename = parts[0].strip().split('/')[-1]
+            local_path = os.path.join('wav_16k', filename)
+            if os.path.exists(local_path):  # 파일이 실제로 존재하는 경우만 추가
+                result.append({
+                    'file_path': local_path,
+                    'transcript': parts[1].strip()
+                })
+    
+    return pd.DataFrame(result)
+
+# CSV 파일 정리 및 데이터프레임 생성
+df = clean_csv()
+
+# 데이터셋 생성 전에 경로가 올바른지 확인
+print("Sample path:", df['file_path'].iloc[0])
+print("Total samples:", len(df))
+dataset = Dataset.from_pandas(df)
+
+# Audio 컬럼 설정 (로컬 파일에서 오디오 로드)
+dataset = dataset.cast_column("file_path", Audio(sampling_rate=16000))
+
+# train/validation split (9:1 비율)
+dataset = dataset.train_test_split(test_size=0.1)
+train_dataset = dataset["train"]
+eval_dataset = dataset["test"]
+
+# 5. 모델 및 프로세서 로드
+model_name = "SungBeom/whisper-small-ko"
+processor = WhisperProcessor.from_pretrained(model_name)
+model = WhisperForConditionalGeneration.from_pretrained(model_name)
+
+# 최대 입력 길이 설정
+max_input_length = 30 * 16000  # 30초
+
+# 6. 입력/출력 포맷팅 함수 정의
+def prepare_dataset(batch):
+    # 오디오 로드 및 전처리
+    audio = batch["file_path"]
+    
+    # 입력 길이 제한
+    raw_audio = audio["array"]
+    if len(raw_audio) > max_input_length:
+        raw_audio = raw_audio[:max_input_length]
+    
+    inputs = processor(raw_audio, sampling_rate=16000, return_tensors="pt")
+    batch["input_features"] = inputs.input_features[0]
+    
+    # 텍스트 전처리
+    batch["labels"] = processor.tokenizer(batch["transcript"]).input_ids
+    
+    return batch
+
+# 7. 데이터 전처리 적용
+train_dataset = train_dataset.map(prepare_dataset, remove_columns=train_dataset.column_names)
+eval_dataset = eval_dataset.map(prepare_dataset, remove_columns=eval_dataset.column_names)
+
+# 8. 훈련 설정
+training_args = Seq2SeqTrainingArguments(
+    output_dir="./whisper-output",
+    per_device_train_batch_size=2,  # 배치 크기 감소
+    per_device_eval_batch_size=2,   # 배치 크기 감소
+    gradient_accumulation_steps=4,   # 그래디언트 누적 스텝 증가
+    num_train_epochs=3,
+    learning_rate=1e-5,
+    warmup_steps=200,
+    logging_steps=100,
+    save_steps=500,
+    eval_steps=500,
+    fp16=False,                     # fp16 비활성화
+    generation_max_length=225,
+    predict_with_generate=True,
+    gradient_checkpointing=True,    # 그래디언트 체크포인팅 활성화
+    optim="adamw_torch"             # 옵티마이저 변경
+)
+
+# 9. Trainer 정의 및 학습
+trainer = Seq2SeqTrainer(
+    args=training_args,
+    model=model,
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset,
+    data_collator=DataCollatorSpeechSeq2SeqWithPadding(processor=processor),
+)
+
+trainer.train()
