@@ -1,0 +1,217 @@
+import streamlit as st
+import requests
+from PIL import Image
+import os
+
+# 이미지 경로
+IMG1 = "images/map1.png"
+IMG3 = "images/map3.png"
+
+# 상태 관리
+if "page" not in st.session_state:
+    st.session_state.page = "start"
+if "selected_contact" not in st.session_state:
+    st.session_state.selected_contact = None
+if "selected_message" not in st.session_state:
+    st.session_state.selected_message = "실시간 대피 경로 보내기"
+
+# 1. 화재 감지 API 호출 (실제 연동)
+def check_fire():
+    try:
+        response = requests.post(
+            "http://localhost:5001/predict_path",
+            json={"audio_path": "/Users/pit_a_pat_/Desktop/alert.wav"} # 본인 로컬의 경로로 변경 필요
+        )
+        result = response.json()
+        print("API 응답:", result)  # 터미널에 결과 출력
+        if result.get("situation") == "fire":
+            st.session_state.page = "fire"
+        else:
+            st.session_state.page = "not_fire"
+    except Exception as e:
+        print("API 호출 오류:", e)  # 터미널에 에러 출력
+        st.session_state.page = "not_fire"
+
+# 2. 첫 번째 화면 (지도 + 버튼)
+def page_fire():
+    img_path = IMG1
+    img_width = 300  # 원하는 가로폭(px)으로 조절
+    img_height = 400
+
+    cols = st.columns([1,2,1])
+    with cols[1]:
+        st.image(img_path, width=img_width)
+        st.markdown(
+            f"""
+            <style>
+            div.stButton > button {{
+                width: {img_width}px !important;
+                height: 48px !important;
+                font-size: 1.2em;
+                background: #115399 !important;
+                color: #fff !important;
+                border-radius: 12px !important;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        if st.button("현 위치와 대피 경로 공유하기"):
+            st.session_state.page = "share"
+
+# 3. 두 번째 화면 (연락처/메시지 선택)
+def page_share():
+    st.markdown('<h2><b>현 위치와 대피 경로 공유하기</b></h2>', unsafe_allow_html=True)
+    st.write("수신자")
+    contacts = [("우리 딸", "images/contact1.png"), ("손자", "images/contact2.png")]
+    for name, img in contacts:
+        cols = st.columns([1,2,1])
+        with cols[1]:
+            st.image(img, width=300)
+            if st.button(name):
+                st.session_state.selected_contact = name
+    # 연락처 선택 시 안내 문구 표시
+    if st.session_state.selected_contact:
+        st.markdown(f"""
+        <div style="background-color:#fff3cd; color:#856404; padding:16px; border-radius:8px; font-weight:bold; font-size:1.1em; margin-bottom:10px; text-align:center;">
+            {st.session_state.selected_contact}에게 대피 경로를 공유합니다.
+        </div>
+        """, unsafe_allow_html=True)
+    st.write("메시지")
+    msg_cols = st.columns([1,2,1])
+    with msg_cols[1]:
+        msg1 = st.button("메시지 수정하기")
+        msg2 = st.button("실시간 대피 경로 보내기")
+        if msg1:
+            st.session_state.selected_message = "메시지 수정하기"
+        if msg2:
+            st.session_state.selected_message = "실시간 대피 경로 보내기"
+        st.markdown(f"""
+        <div style="background-color:#fff3cd; color:#856404; padding:12px; border-radius:8px; font-weight:bold; font-size:1.05em; margin-bottom:10px; text-align:center;">
+            선택된 메시지: {st.session_state.selected_message}
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("보내기"):
+            st.session_state.page = "map"
+
+# 4. 세 번째 화면 (대피 경로 지도)
+def page_map():
+    st.markdown('''
+        <div style="background-color:#fff3cd; color:#856404; padding:16px; border-radius:8px; font-weight:bold; font-size:1.1em; margin-bottom:18px; text-align:center;">
+            대피 경로가 공유되었습니다!
+        </div>
+    ''', unsafe_allow_html=True)
+    if st.button("위치 기반 대피소 추천 보기"):
+        st.session_state.page = "recommend"
+
+# 네 번째 페이지: 위치 기반 추천
+
+def page_recommend():
+    st.markdown('<b style="font-size:1.1em;">위치 기반 추천</b>', unsafe_allow_html=True)
+    shelters = [
+        {"name": "안평면사무소", "desc": "면행정복지센터", "time": "38분", "distance": "2.2Km", "address": "경북 의성군 안평면 안평의성로 36"},
+        {"name": "신동마을회관", "desc": "", "time": "1시간 47분", "distance": "6.9km", "address": "경북 의성군 안평면 신동길 12"}
+    ]
+    selected = st.session_state.get('selected_shelter')
+    btn_css = '''
+        <style>
+        div.stButton > button {
+            width: 100% !important;
+            height: 48px !important;
+            background: #115399 !important;
+            color: #fff !important;
+            font-weight: bold !important;
+            font-size: 1.1em !important;
+            border: none !important;
+            border-radius: 12px !important;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        </style>
+    '''
+    st.markdown(btn_css, unsafe_allow_html=True)
+    if not selected:
+        for shelter in shelters:
+            cols = st.columns([1,6,1])
+            with cols[1]:
+                st.markdown(f"""
+                    <div style='background:#fff; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.04); padding:18px 0 10px 0; margin-bottom:12px; width:100%; text-align:left;'>
+                        <div style='font-size:1.2em; font-weight:bold; color:#222; display:inline;'>{shelter['name']}</div>
+                        <span style='color:#888; font-size:1em; margin-left:8px;'>{shelter['desc']}</span><br>
+                        <span style='color:#1976d2; font-weight:bold; font-size:1em;'>{shelter['time']}</span>
+                        <span style='color:#888; font-size:0.95em; margin-left:8px;'>{shelter['distance']}</span>
+                        <span style='color:#888; font-size:0.95em; margin-left:16px;'>{shelter['address']}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+                if st.button("선택", key=f"select_{shelter['name']}"):
+                    st.session_state.selected_shelter = shelter['name']
+    else:
+        # 선택된 대피소 상세 정보만 카드로 출력
+        shelter = next(s for s in shelters if s['name'] == selected)
+        cols = st.columns([1,6,1])
+        with cols[1]:
+            st.markdown(f"""
+                <div style='background:#fff; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.04); padding:18px 0 18px 0; margin-bottom:18px; width:100%; text-align:left;'>
+                    <div style='font-size:1.2em; font-weight:bold; color:#222; display:inline;'>{shelter['name']}</div>
+                    <span style='color:#888; font-size:1em; margin-left:8px;'>{shelter['desc']}</span><br>
+                    <span style='color:#1976d2; font-weight:bold; font-size:1em;'>{shelter['time']}</span>
+                    <span style='color:#888; font-size:0.95em; margin-left:8px;'>{shelter['distance']}</span>
+                    <span style='color:#888; font-size:0.95em; margin-left:16px;'>{shelter['address']}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("길 찾기 시작", key="start_route"):
+                st.session_state.page = "navigation"
+
+# 마지막 페이지: 길찾기 진행
+
+def page_navigation():
+    btn_css = '''
+        <style>
+        div.stButton > button {
+            width: 300px !important;
+            height: 48px !important;
+            background: #115399 !important;
+            color: #fff !important;
+            font-weight: bold !important;
+            font-size: 1.1em !important;
+            border: none !important;
+            border-radius: 12px !important;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        </style>
+    '''
+    st.markdown(btn_css, unsafe_allow_html=True)
+    img_width = 300
+    cols = st.columns([1,2,1])
+    with cols[1]:
+        st.image("images/map4.png", width=img_width)
+        st.button("길찾기 종료", key="end_route")
+
+# 화재 상황 아님 안내 페이지
+def page_not_fire():
+    st.markdown('<div style="text-align:center; font-size:1.3em; font-weight:bold; color:#1976d2; margin-top:60px;">화재 상황이 아닙니다.</div>', unsafe_allow_html=True)
+
+# 메인 라우팅
+if st.session_state.page == "start":
+    st.title("화재 감지 테스트")
+    if st.button("화재 감지 시작"):
+        check_fire()
+elif st.session_state.page == "fire":
+    page_fire()
+elif st.session_state.page == "share":
+    page_share()
+elif st.session_state.page == "map":
+    page_map()
+elif st.session_state.page == "recommend":
+    page_recommend()
+elif st.session_state.page == "navigation":
+    page_navigation()
+elif st.session_state.page == "not_fire":
+    page_not_fire()
+else:
+    st.write("정상 상황입니다.")
+
+
