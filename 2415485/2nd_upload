@@ -1,5 +1,5 @@
 from huggingface_hub import login
-login("") #입력필요
+login("") # hugging face 토큰을 입력
 
 # 3. 라이브러리 임포트
 import torch
