@@ -5,10 +5,10 @@
 
 
 팀원 : <br>
-•이나연(2414115, nylee16) <br>
-•양서연(2415485, bigfish951)<br>
-•윤소윤(2415409, Sso1002) <br>
-•이은진(2572307, xxnjxn)<br>
+•이나연 (2414115, nylee16) <br>
+•양서연 (2415485, bigfish951)<br>
+•윤소윤 (2415409, Sso1002) <br>
+•이은진 (2572307, xxnjxn)<br>
 
 소속 : 
 숙명여자대학교 (Sookmyung Women's University) 인공지능공학부 (Department of Artificial Intelligence Engineering)<br>
