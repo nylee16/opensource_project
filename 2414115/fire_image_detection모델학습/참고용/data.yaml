@@ -12,10 +12,10 @@ names:
 nc: 10
 roboflow:
   license: MIT
-  project: firedetection-9toil
-  url: https://universe.roboflow.com/smopensourcefiredetection/firedetection-9toil/dataset/6
+  project: 
+  url: 
   version: 6
-  workspace: smopensourcefiredetection
+  workspace: 
 test: C:/Users/admin/2414115/firedetection-6/test
 train: C:/Users/admin/2414115/firedetection-6/train
 val: C:/Users/admin/2414115/firedetection-6/valid
