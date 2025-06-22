@@ -132,7 +132,7 @@ pip install -r requirements.txt<br>
 image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 
 4. 터미널을 하나 열어주세요. Open a terminal.<br>
-• 터미널(terminal) : test.py 실행
+• 터미널(terminal) : python test.py 실행
 
 5. 동작 방식<br>
 • best.pt 경로에서 YOLOv8 화재 감지 모델을 불러옵니다. Load the YOLOv8 fire detection model from the best.pt path.<br>
