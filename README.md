@@ -59,10 +59,14 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 
 화재/비화재 이미지 분류 결과
 모델은 학습된 딥러닝 알고리즘(YOLOv8)을 활용해 입력된 이미지를 화재와 비화재로 구분함. 
+
+---
 1,2 : 화재 / 3,4 : 비화재
 
 ![image](https://github.com/user-attachments/assets/b005813c-2ad6-489a-ba3f-3bb6dc935b94) ![result_1750434153](https://github.com/user-attachments/assets/00c47a3a-ea96-41df-b06c-c638956d6267)
 ![image](https://github.com/user-attachments/assets/43c4fc12-738b-4b2c-af7a-fcfb190388a9) ![image](https://github.com/user-attachments/assets/a045e1d5-f785-45df-a601-14af168e2e3a)
+
+---
 
 • 화재
 불꽃의 색상, 연기, 밝기 변화 등 시각적 패턴을 인식하여 화재로 판단함.
@@ -71,8 +75,14 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 색상은 유사할 수 있으나, 불꽃이나 연기 특유의 패턴이 없으면 비화재로 분류함.
 
 화재와 비화재로 구분함.
-(왼: 화재, 오: 비화재)
-![image](https://github.com/user-attachments/assets/5cde1f12-3f12-413c-ac8c-324ff9c86eaa) ![image](https://github.com/user-attachments/assets/fa82bcaf-75e9-482f-a8ec-fb8a6058a7e8)
+(위: 화재, 아래: 비화재)
+
+---
+
+![image](https://github.com/user-attachments/assets/5cde1f12-3f12-413c-ac8c-324ff9c86eaa) 
+![image](https://github.com/user-attachments/assets/fa82bcaf-75e9-482f-a8ec-fb8a6058a7e8)
+
+---
 
 • 화재
 음성 파일에서 화재 키워드(‘불’, ‘비상’, ‘대피’ 등) 또는 화재 관련 음성(경보음 등)이 인식되면 화재 상황으로 판단함.
@@ -210,4 +220,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+##Contact (문의, 작성자 정보)
+숙명여자대학교 (Sookmyung Women's University)
+Name : 이나연 (Nayeon Lee)
+Email : nylee16@sookmyung.ac.kr
+
+Name : 양서연
+Name : 윤소윤
+Name : 이은진
 
