@@ -1,6 +1,3 @@
-# opensource_project
-2414115 이나연 2415485 양서연 2415409 윤소윤 2572307 이은진 / 오픈소스프로그래밍 프로젝트
-
 # Project Name
 ##재난 취약계층인 노인을 위한 음성·이미지 기반 화재 감지 및 대피 안내 서비스
 (Voice and Image-based Fire Detection and Evacuation Guidance Service for Disaster-Vulnerable Elderly)
@@ -13,6 +10,7 @@
 
 소속 : 
 숙명여자대학교 (Sookmyung Women's University) 인공지능공학부 (Department of Artificial Intelligence Engineering)
+
 오픈소스프로그래밍 과목 기말 프로젝트 (Final Project for the Open-Source Programming Course)
 
 
