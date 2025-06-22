@@ -62,7 +62,8 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 1,2 : 화재 / 3,4 : 비화재
 
 ![image](https://github.com/user-attachments/assets/b005813c-2ad6-489a-ba3f-3bb6dc935b94) ![result_1750434153](https://github.com/user-attachments/assets/00c47a3a-ea96-41df-b06c-c638956d6267) <br>
-![image](https://github.com/user-attachments/assets/43c4fc12-738b-4b2c-af7a-fcfb190388a9) ![image](https://github.com/user-attachments/assets/a045e1d5-f785-45df-a601-14af168e2e3a)
+![image](https://github.com/user-attachments/assets/43c4fc12-738b-4b2c-af7a-fcfb190388a9) ![image](https://github.com/user-attachments/assets/0a75899a-8053-45ee-af7d-c9716338a3f5)
+
 
 ---
 
