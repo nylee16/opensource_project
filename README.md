@@ -1,6 +1,8 @@
 # Project Name
-##재난 취약계층인 노인을 위한 음성·이미지 기반 화재 감지 및 대피 안내 서비스
-(Voice and Image-based Fire Detection and Evacuation Guidance Service for Disaster-Vulnerable Elderly)
+
+### 재난 취약계층인 노인을 위한 음성·이미지 기반 화재 감지 및 대피 안내 서비스
+### (Voice and Image-based Fire Detection and Evacuation Guidance Service for Disaster-Vulnerable Elderly)
+
 
 팀원 : 
 •이나연(2414115, nylee16) 
@@ -224,6 +226,11 @@ Name : 이나연 (Nayeon Lee)
 Email : nylee16@sookmyung.ac.kr
 
 Name : 양서연
+Email : 2415485@sookmyung.ac.kr
+
 Name : 윤소윤
+Email : ysy2415409@sookmyung.ac.kr
+
 Name : 이은진
+Email : ejlee917@seoultech.ac.kr
 
