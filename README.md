@@ -144,7 +144,7 @@ image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 
 • 음성 모델 활용 방법 (How to utilize the voice-based fire detection model)<br>
 =>  opensource_project/2415485/ 기반 설명<br>
-1. 원하는 음성 데이터와 레이블을 준비하거나, 제공된 학습용 파일을 지정된 경로에 저장하세요. Prepare your own audio files and transcripts, or use the provided training files by placing them in the designated directories.
+1. 원하는 음성 데이터와 레이블이나, 제공된 학습용 파일을 지정된 경로에 저장하세요. Save either your own audio data and labels or the provided training files in the specified directory.
 
 2. 필수 패키지를 설치해주세요.<br>
 	pip install -r requirements.txt
