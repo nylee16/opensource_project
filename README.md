@@ -150,7 +150,7 @@ image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 2. 필수 패키지를 설치해주세요.<br>
 	pip install -r requirements.txt
 
-3. 3rd_upload.py 스크립트를 불러와 Hugging Face 토큰을 입력하세요. Open the 3rd_upload.py script and enter your Hugging Face access token.
+3. 3rd_upload 스크립트를 불러와 Hugging Face 토큰을 입력하세요. Open the 3rd_upload script and enter your Hugging Face access token.
 
 4. 학습 스크립트를 실행하세요. Run the training script.<br>
 python 3rd_upload.py
