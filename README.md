@@ -81,7 +81,8 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 ---
 
 ![image](https://github.com/user-attachments/assets/5cde1f12-3f12-413c-ac8c-324ff9c86eaa) 
-![image](https://github.com/user-attachments/assets/fa82bcaf-75e9-482f-a8ec-fb8a6058a7e8)
+![image](https://github.com/user-attachments/assets/971a0ba2-40c2-44b0-af10-c04f466edfbb)
+
 
 ---
 
@@ -133,8 +134,8 @@ image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 • 터미널(terminal) : test.py 실행
 
 5. 동작 방식<br>
-• best.pt 경로에서 YOLOv8 화재 감지 모델을 불러온다. Load the YOLOv8 fire detection model from the best.pt path.<br>
-• 원하는 이미지에서 fire 또는 smoke 탐지를 수행 (신뢰도 ≥ 0.25 감지시 성공) Perform fire or smoke detection on your desired image.<br>
+• best.pt 경로에서 YOLOv8 화재 감지 모델을 불러옵니다. Load the YOLOv8 fire detection model from the best.pt path.<br>
+• 원하는 이미지에서 fire 또는 smoke 탐지를 수행합니다. (신뢰도 ≥ 0.25 감지시 성공) Perform fire or smoke detection on your desired image.<br>
 • 감지 성공 (detection sucess) : True 반환(return) + 경고 메시지 (+ 결과 이미지 제시 또는 저장) (warning message)<br>
 • 감지 실패 (detection failure) : False 반환(return) + 안전 메시지 (safety message)
 
@@ -179,8 +180,9 @@ image_path = "images/test_img_2.jpg"
 
 5. 동작 방식<br>
 • fire_detection_api.py : 음성 모델을 실시간으로 감지 (The voice model performs real-time monitoring)<br>
-• fire_image_detection.py : 이미지 모델 결과(true/flase) 값을 반환 (Returns a true/false value indicating fire detection)<br>
-• streamlit_ui_main : 두 모델 결과 통합 / streamlit 사이트에서 화재 감지 시작 버튼을 누르면 화재 감지가 시작되고 상황에 맞는 UI 서비스가 구현됨 (Pressing the 화재 감지 시작 button on the Streamlit site initiates detection and launches a context-aware UI service)
+• fire_image_detection.py : 이미지 모델 결과(true/flase) 값을 반환합니다. (Returns a true/false value indicating fire detection)<br>
+• streamlit_ui_main : 두 모델 결과 통합 / streamlit 사이트에서 화재 감지 시작 버튼을 누르면 화재 감지가 시작되고 상황에 맞는 UI 서비스가 구현됩니다.
+(Pressing the 화재 감지 시작 button on the Streamlit site initiates detection and launches a context-aware UI service)
 
 
 ## Contribution Guide (기여방법) 
