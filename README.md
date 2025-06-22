@@ -232,7 +232,7 @@ SOFTWARE.
 ## Contact (문의, 작성자 정보)
 숙명여자대학교 (Sookmyung Women's University)
 
-Name : 이나연 (Nayeon Lee)
+Name : 이나연
 Email : nylee16@sookmyung.ac.kr
 
 Name : 양서연
