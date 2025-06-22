@@ -81,7 +81,7 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 ---
 
 ![image](https://github.com/user-attachments/assets/5cde1f12-3f12-413c-ac8c-324ff9c86eaa) 
-![image](https://github.com/user-attachments/assets/971a0ba2-40c2-44b0-af10-c04f466edfbb)
+![image](https://github.com/user-attachments/assets/bb6d30ce-b294-4b1d-8c1b-df7cf771ad54)
 
 
 ---
