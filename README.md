@@ -61,7 +61,7 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 ---
 1,2 : 화재 / 3,4 : 비화재
 
-![image](https://github.com/user-attachments/assets/b005813c-2ad6-489a-ba3f-3bb6dc935b94) ![result_1750434153](https://github.com/user-attachments/assets/00c47a3a-ea96-41df-b06c-c638956d6267) <br>
+![image](https://github.com/user-attachments/assets/b005813c-2ad6-489a-ba3f-3bb6dc935b94) ![result_1750434153](https://github.com/user-attachments/assets/00c47a3a-ea96-41df-b06c-c638956d6267) 
 ![image](https://github.com/user-attachments/assets/43c4fc12-738b-4b2c-af7a-fcfb190388a9) ![image](https://github.com/user-attachments/assets/0a75899a-8053-45ee-af7d-c9716338a3f5)
 
 
@@ -92,7 +92,7 @@ https://www.notion.so/UI-21ac6b602efe8016b686db2182a901ca?source=copy_link
 • 비화재
 음성 파일에서 화재 키워드(‘불’, ‘비상’, ‘대피’ 등) 또는 화재 관련 음성(경보음 등)이 인식되지 않으면 비화재 상황으로 판단함.
 
-##Folder Structure (폴더 구조)
+##Folder Structure (폴더 구조) <br>
 Opensource_project/<br>
 ├── 2414115/<br>
 │   ├── fire_image_detection모델학습<br>
