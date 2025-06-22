@@ -155,9 +155,9 @@ image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 python 3rd_upload.py
 
 5. 동작 방식<br>
-• labels.csv의 내용을 기반으로, 오디오 파일 경로를 사용하여 학습용 데이터셋을 생성합니다. labels.csv is parsed to generate a training dataset using valid local audio paths.<br>
-• Whisper processor를 통해 음성과 텍스트를 전처리합니다. Audio and transcript data are preprocessed using the Whisper processor.<br>
-• Hugging Face에서 SungBeom/whisper-small-ko 모델을 불러와 fine-tuning을 진행합니다. The model SungBeom/whisper-small-ko from Hugging Face is fine-tuned using the dataset.<br>
+• labels.csv의 내용을 기반으로, 오디오 파일 경로를 사용하여 학습용 데이터셋을 생성합니다. Generates a training dataset from labels.csv, using corresponding local audio file paths.<br>
+• Whisper processor를 통해 음성과 텍스트를 전처리합니다. Preprocesses audio and text using the Whisper processor.<br>
+• Hugging Face에서 SungBeom/whisper-small-ko 모델을 불러와 fine-tuning을 진행합니다. Fine-tunes the SungBeom/whisper-small-ko model from Hugging Face.<br>
 • 학습이 완료되면 ./whisper-output 폴더에 체크포인트가 저장됩니다. After training, checkpoints are saved in the ./whisper-output directory.
 
 ---
