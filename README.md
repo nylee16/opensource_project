@@ -144,13 +144,13 @@ image_path = "test1.jpg"  # 테스트 이미지 로컬 경로
 
 • 음성 모델 활용 방법 (How to utilize the voice-based fire detection model)<br>
 =>  opensource_project/2415485/ 기반 설명<br>
-1. 원하는 음성 데이터와 레이블을 지정된 경로에 저장하세요. Save your own audio data and labels in the specified directory.
+1. 원하는 음성 데이터와 레이블을 지정된 경로에 저장하세요. Save your desired audio data and labels in the specified directory.
 
 
 2. 필수 패키지를 설치해주세요.<br>
 	pip install -r requirements.txt
 
-3. Hugging Face 로그인 토큰을 입력하세요. Enter your Hugging Face access token.
+3. 3rd_upload.py 스크립트를 불러와 Hugging Face 토큰을 입력하세요. Open the 3rd_upload.py script and enter your Hugging Face access token.
 
 4. 학습 스크립트를 실행하세요. Run the training script.<br>
 python 3rd_upload.py
